@@ -25,7 +25,7 @@ public class User implements Runnable {
                 final var packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
                 final var data = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
-                System.out.println("Usuario recebeu: " + data);
+                System.out.println("\u001B[32m" + "Usuario recebeu: " + data);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
