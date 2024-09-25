@@ -22,20 +22,14 @@ public class User implements Runnable {
         try {
             byte[] buffer = new byte[1024];
             while (true) {
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                final var packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
-
-                String dados = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
-                System.out.println("Usuario recebeu: " + dados);
+                final var data = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
+                System.out.println("Usuario recebeu: " + data);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
-            try {
-                socket.leaveGroup(multicastIP);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             socket.close();
         }
     }

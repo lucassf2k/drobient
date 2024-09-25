@@ -26,7 +26,6 @@ public class Drone implements Runnable {
         final var radiation = 200 + random.nextInt(801); // Exemplo: 200-1000 W/m^2
         final var temperature = -10 + random.nextInt(51); // Exemplo: -10 a 40 °C
         final var humidity = random.nextInt(101); // Exemplo: 0-100%
-
         return String.format("ID: %s, Pressão: %d hPa, Radiação: %d W/m^2, Temperatura: %d °C, Umidade: %d%%",
                 id, pressure, radiation, temperature, humidity);
     }
@@ -51,8 +50,6 @@ public class Drone implements Runnable {
 
     public static void main(String[] args) throws IOException {
         final var drone = new Drone("localhost", 56789);
-        final var drone2 = new Drone("localhost", 56789);
         new Thread(drone).start();
-        new Thread(drone2).start();
     }
 }
