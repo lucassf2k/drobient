@@ -7,6 +7,8 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DistributionServer implements Runnable {
     private final int id;
@@ -14,6 +16,7 @@ public class DistributionServer implements Runnable {
     private final int portaMulticast;
     private final InetAddress externalMulticastIP; // Endereço multicast para usuários externos
     private final int portaExternal;
+    private final Set<String> allowedIPs = new HashSet<>();
 
     public DistributionServer(int id, String multicastIP, int portaMulticast, String externalMulticastIP, int portaExternal) throws IOException {
         this.id = id;
@@ -22,6 +25,7 @@ public class DistributionServer implements Runnable {
         this.externalMulticastIP = InetAddress.getByName(externalMulticastIP); // Multicast externo
         this.portaExternal = portaExternal; // Porta externa
 
+        allowedIPs.add("192.168.0.0/24");
     }
 
     @Override
@@ -38,6 +42,11 @@ public class DistributionServer implements Runnable {
                 final var dadosRecepcao = new byte[1024];
                 final var pacoteRecepcao = new DatagramPacket(dadosRecepcao, dadosRecepcao.length);
                 ms.receive(pacoteRecepcao);
+
+                if (!isIPAllowed(pacoteRecepcao.getAddress())) {
+                    System.out.println("IP " + pacoteRecepcao.getAddress() + " bloqueado no servidor de distribuição.");
+                    continue;  // Ignora a mensagem se o IP não for permitido
+                }
 
                 final var dados = new String(pacoteRecepcao.getData(), 0, pacoteRecepcao.getLength(), StandardCharsets.UTF_8);
                 System.out.println("Servidor " + id + " recebeu do grupo: " + dados);
@@ -60,6 +69,16 @@ public class DistributionServer implements Runnable {
             msExternal.send(pacoteEnvio);
             System.out.println("Servidor " + id + " retransmitiu dados para o grupo externo: " + dados);
         }
+    }
+
+    private boolean isIPAllowed(InetAddress ip) {
+        String ipStr = ip.getHostAddress();
+        for (String allowedIP : allowedIPs) {
+            if (ipStr.startsWith(allowedIP.replace("/24", ""))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void main(String[] args) throws IOException {
